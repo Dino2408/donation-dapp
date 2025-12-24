@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quyên góp Blockchain - Sepolia</title>
+    <style>
+        /* --- GIAO DIỆN ĐẸP --- */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background-color: #f4f6f8; color: #333; }
+        .container { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); max-width: 650px; margin: auto; }
+        
+        h2 { color: #2c3e50; margin-bottom: 5px; }
+        p.subtitle { color: #7f8c8d; margin-top: 0; font-size: 0.9em; }
+
+        input, button, textarea { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-size: 1em; }
+        
+        button { cursor: pointer; font-weight: bold; border: none; transition: 0.3s; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        
+        .hidden { display: none !important; }
+
+        /* Thông tin ví */
+        .info-box { background: #e9f7ef; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #c3e6cb; text-align: left; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .highlight { color: #28a745; font-weight: bold; font-size: 1.1em; }
+
+        /* Admin Panel */
+        #adminSection { background-color: #fff3cd; padding: 20px; border-radius: 10px; border: 1px solid #ffeeba; margin-top: 30px; text-align: left; }
+
+        /* Bảng lịch sử */
+        .table-wrapper { overflow-x: auto; max-height: 400px; overflow-y: auto; border-radius: 8px; border: 1px solid #eee; margin-top: 10px;}
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        th { background-color: #f8f9fa; position: sticky; top: 0; z-index: 10; font-weight: 600; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #eee; text-align: left; }
+        
+        .address { color: #007bff; font-family: monospace; background: #f0f8ff; padding: 2px 6px; border-radius: 4px; }
+        .my-row { background-color: #f0fff4; } /* Tô màu dòng của mình */
+        
+        /* Bộ lọc */
+        .filter-container { display: flex; gap: 10px; align-items: center; margin-top: 20px;}
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>🚀 Quỹ Cộng Đồng (Sepolia)</h2>
+        <p class="subtitle">Kết nối ví để trải nghiệm Hardhat Deploy</p>
+        
+        <button id="connectBtn" class="btn-primary" style="padding: 15px; font-size: 1.1em;">🔌 Kết nối ví MetaMask</button>
+
+        <div id="appSection" class="hidden">
+            
+            <div class="info-box">
+                <div class="info-row">
+                    <span>👤 Ví của bạn:</span>
+                    <span id="walletAddress" style="font-weight:bold; font-family: monospace">...</span>
+                </div>
+                <div class="info-row">
+                    <span>💰 Tổng quỹ:</span>
+                    <span class="highlight"><span id="totalFund">0</span> ETH</span>
+                </div>
+            </div>
+
+            <div style="text-align: left;">
+                <h3 style="margin-bottom: 10px;">💖 Gửi tấm lòng</h3>
+                <input type="number" id="amount" placeholder="Số tiền (ETH) - VD: 0.001" step="0.0001">
+                <textarea id="message" placeholder="Viết lời nhắn..." rows="2"></textarea>
+                <button id="donateBtn" class="btn-primary">Gửi Quyên Góp 🚀</button>
+                <p id="status" style="margin-top: 10px; font-weight: bold; text-align: center; min-height: 20px;"></p>
+            </div>
+
+            <div id="adminSection" class="hidden">
+                <h3>🔐 Admin Panel</h3>
+                <p style="font-size: 0.9em;">Bạn là chủ sở hữu contract này.</p>
+                <input type="text" id="withdrawAddress" placeholder="Địa chỉ ví nhận tiền..." style="background: white;">
+                <button id="withdrawBtn" class="btn-danger">💸 Rút toàn bộ quỹ</button>
+            </div>
+
+            <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
+
+            <h3 style="text-align: left;">📜 Lịch sử giao dịch</h3>
+            <div class="filter-container">
+                <input type="text" id="searchInput" placeholder="🔍 Tìm ví hoặc lời nhắn..." style="flex:1;">
+                <label style="white-space: nowrap; cursor: pointer;">
+                    <input type="checkbox" id="myDonationFilter"> Chỉ hiện của tôi
+                </label>
+            </div>
+
+            <div class="table-wrapper">
+                <table id="donationTable">
+                    <thead>
+                        <tr>
+                            <th>Người gửi</th>
+                            <th>ETH</th>
+                            <th>Lời nhắn</th>
+                            <th>Thời gian</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
+
+        // ============================================================
+        // 👇 THAY ĐỔI 2 DÒNG NÀY THEO THÔNG TIN CỦA BẠN 👇
+        // ============================================================
+        
+        // 1. Dán địa chỉ Contract mới deploy (0x648...)
+        const CONTRACT_ADDRESS = "0xA09420e553B94790A811804c24eF69009b1CaDAF"; 
+
+        // 2. Mở file: artifacts/contracts/Donation.sol/DonationDApp.json
+        // Copy toàn bộ đoạn "abi": [...] và dán vào dưới đây
+        const CONTRACT_ABI = [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "donor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "message",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "NewDonation",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "_message",
+          "type": "string"
+        }
+      ],
+      "name": "donate",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "donations",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "donor",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "message",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getDonations",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "donor",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "timestamp",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "message",
+              "type": "string"
+            }
+          ],
+          "internalType": "struct DonationDApp.Donation[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalDonatedAmount",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address payable",
+          "name": "_to",
+          "type": "address"
+        }
+      ],
+      "name": "withdrawTo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ];
+        // ============================================================
+
+        let provider, signer, contract;
+        let allDonations = [];
+        let currentSignerAddr = "";
+
+        // UI Elements
+        const connectBtn = document.getElementById("connectBtn");
+        const appSection = document.getElementById("appSection");
+        const statusTxt = document.getElementById("status");
+        const walletTxt = document.getElementById("walletAddress");
+        
+        // --- KẾT NỐI VÍ ---
+        connectBtn.onclick = async () => {
+            if (window.ethereum) {
+                try {
+                    // 1. Yêu cầu quyền truy cập
+                    await window.ethereum.request({ method: "eth_requestAccounts" });
+                    
+                    // 2. ÉP BUỘC CHUYỂN SANG MẠNG SEPOLIA
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0xaa36a7' }], // 0xaa36a7 là mã Hex của Sepolia (11155111)
+                        });
+                    } catch (switchError) {
+                        // Nếu mạng Sepolia chưa được thêm vào ví, thông báo lỗi (thường MetaMask đã có sẵn)
+                        if (switchError.code === 4902) {
+                            alert("Vui lòng thêm mạng Sepolia vào MetaMask của bạn!");
+                        }
+                    }
+
+                    // 3. Khởi tạo provider sau khi đã chuyển mạng đúng
+                    provider = new ethers.BrowserProvider(window.ethereum);
+                    signer = await provider.getSigner();
+                    
+                    // Lấy địa chỉ ví
+                    currentSignerAddr = await signer.getAddress();
+                    walletTxt.innerText = currentSignerAddr.substring(0, 6) + "..." + currentSignerAddr.slice(-4);
+                    
+                    // Kết nối Contract
+                    contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+                    // Hiển thị giao diện
+                    connectBtn.classList.add("hidden");
+                    appSection.classList.remove("hidden");
+                    statusTxt.innerText = "✅ Đã kết nối mạng Sepolia!";
+                    statusTxt.style.color = "green";
+                    
+                    loadData(); 
+
+                } catch (error) {
+                    console.error(error);
+                    statusTxt.innerText = "❌ Lỗi: " + error.message;
+                }
+            } else {
+                alert("Vui lòng cài đặt MetaMask!");
+            }
+        };
+
+        // --- GỬI TIỀN (Quan trọng: Có tham số Message) ---
+        document.getElementById("donateBtn").onclick = async () => {
+            const amount = document.getElementById("amount").value;
+            const message = document.getElementById("message").value;
+
+            if (!amount || !message) return alert("Vui lòng nhập tiền và lời nhắn!");
+
+            try {
+                statusTxt.innerText = "⏳ Đang gửi transaction...";
+                statusTxt.style.color = "blue";
+
+                // Gọi hàm donate với 2 tham số: message và value (tiền)
+                const tx = await contract.donate(message, { value: ethers.parseEther(amount) });
+                
+                await tx.wait(); // Đợi xác nhận
+                
+                statusTxt.innerText = "✅ Thành công!";
+                statusTxt.style.color = "green";
+                loadData(); // Tải lại bảng
+                
+            } catch (e) {
+                console.error(e);
+                statusTxt.innerText = "❌ Thất bại: " + (e.reason || e.message);
+                statusTxt.style.color = "red";
+            }
+        };
+
+        // --- RÚT TIỀN (ADMIN) ---
+        document.getElementById("withdrawBtn").onclick = async () => {
+            const dest = document.getElementById("withdrawAddress").value;
+            try {
+                const tx = await contract.withdrawTo(dest);
+                await tx.wait();
+                alert("Rút tiền thành công!");
+                loadData();
+            } catch (e) { alert("Lỗi: " + e.message); }
+        };
+
+        // --- TẢI DỮ LIỆU ---
+        async function loadData() {
+            try {
+                // 1. Lấy tổng tiền
+                const total = await contract.totalDonatedAmount();
+                document.getElementById("totalFund").innerText = ethers.formatEther(total);
+
+                // 2. Lấy danh sách & Admin check
+                const data = await contract.getDonations();
+                allDonations = [...data];
+                filterAndRender(); // Vẽ bảng
+
+                // Kiểm tra Owner để hiện nút Rút tiền
+                try {
+                    const owner = await contract.owner();
+                    if (owner.toLowerCase() === currentSignerAddr.toLowerCase()) {
+                        document.getElementById("adminSection").classList.remove("hidden");
+                    }
+                } catch(e) {}
+
+            } catch (e) { console.error("Lỗi load data", e); }
+        }
+
+        // --- BỘ LỌC & VẼ BẢNG ---
+        const searchInput = document.getElementById("searchInput");
+        const myFilter = document.getElementById("myDonationFilter");
+
+        function filterAndRender() {
+            const keyword = searchInput.value.toLowerCase();
+            const isMyOnly = myFilter.checked;
+
+            const filtered = allDonations.filter(d => {
+                const matchKey = d.donor.toLowerCase().includes(keyword) || d.message.toLowerCase().includes(keyword);
+                const matchOwner = isMyOnly ? (d.donor.toLowerCase() === currentSignerAddr.toLowerCase()) : true;
+                return matchKey && matchOwner;
+            });
+
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+            
+            // Duyệt ngược để tin mới nhất lên đầu
+            for (let i = filtered.length - 1; i >= 0; i--) {
+                const d = filtered[i];
+                const date = new Date(Number(d.timestamp) * 1000).toLocaleString();
+                const isMine = d.donor.toLowerCase() === currentSignerAddr.toLowerCase();
+                
+                tbody.innerHTML += `
+                    <tr class="${isMine ? 'my-row' : ''}">
+                        <td><span class="address">${d.donor.substring(0,6)}...${d.donor.slice(-4)}</span></td>
+                        <td style="font-weight:bold; color:green;">${ethers.formatEther(d.amount)}</td>
+                        <td>${d.message}</td>
+                        <td style="font-size:0.8em; color:#666;">${date}</td>
+                    </tr>`;
+            }
+        }
+
+        searchInput.addEventListener("input", filterAndRender);
+        myFilter.addEventListener("change", filterAndRender);
+
+    </script>
+</body>
+</html>
