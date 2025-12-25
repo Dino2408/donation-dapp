@@ -1,19 +1,26 @@
 import hre from "hardhat";
+const { ethers } = hre;
+
 async function main() {
-  console.log("Đang chuẩn bị deploy...");
+  // 👇 DANH SÁCH CÁC VÍ SẼ LÀM CHỦ SỞ HỮU (Thay bằng ví thật của bạn)
+  const owners = [
+      "0x59500a0BcE501Fe08044fB5B63B933F792d0e32e", 
+      "0x309b1aFA57F7b279beECa3E1fD5Aa2307e5bd3eF", 
+      "0xDBeAA7FE31285ABa445a54d2522eC08474826144"  
+  ];
+  const requiredApprovals = 2; // Cần ít nhất 2 người đồng ý mới được rút
 
-  // 1. Lấy code contract
-  // Chú ý: "DonationDApp_V3" phải đúng tên contract trong file .sol (class name)
-  const Donation = await hre.ethers.getContractFactory("DonationDApp");
+  console.log("Deploying DonationDApp with Multi-Sig...");
+  const DonationDApp = await ethers.getContractFactory("DonationDApp");
+  
+  // Truyền tham số vào constructor
+  const donation = await DonationDApp.deploy(owners, requiredApprovals);
 
-  // 2. Gửi lệnh deploy lên mạng
-  const donation = await Donation.deploy();
-
-  // 3. Đợi mạng xác nhận
   await donation.waitForDeployment();
 
-  console.log("✅ Đã deploy thành công!");
-  console.log("Địa chỉ Contract:", await donation.getAddress());
+  console.log(`DonationDApp deployed to: ${donation.target}`);
+  console.log(`Owners: ${owners}`);
+  console.log(`Required Approvals: ${requiredApprovals}`);
 }
 
 main().catch((error) => {

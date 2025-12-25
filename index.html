@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crowdfunding Blockchain</title>
+    <title>Multi-Sig Crowdfunding DAO</title>
     <style>
         /* --- CSS CHUNG --- */
         body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; text-align: center; color: #333; }
         .container { max-width: 1000px; margin: auto; }
         .hidden { display: none !important; }
         
-        /* Button Styles */
         button { cursor: pointer; font-weight: bold; border: none; padding: 10px 20px; border-radius: 8px; transition: 0.3s; }
         .btn-primary { background: #007bff; color: white; }
         .btn-primary:hover { background: #0056b3; }
+        .btn-success { background: #28a745; color: white; }
         .btn-danger { background: #dc3545; color: white; }
         .btn-secondary { background: #6c757d; color: white; }
+        .btn-warning { background: #ffc107; color: #333; }
+        
         .btn-back { background: transparent; color: #555; border: 1px solid #ccc; float: left; margin-bottom: 10px; }
-        .btn-back:hover { background: #eee; }
 
         input { padding: 10px; border: 1px solid #ddd; border-radius: 6px; width: 100%; box-sizing: border-box; margin-top: 5px; }
 
-        /* --- MÀN HÌNH HOME (GRID VIEW) --- */
+        /* --- UI COMPONENTS --- */
         .campaign-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
         .card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; text-align: left; display: flex; flex-direction: column; cursor: pointer; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
@@ -30,28 +31,28 @@
         .badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; float: right; color: white; }
         .badge.open { background: #28a745; } .badge.closed { background: #6c757d; }
         
-        /* Progress Bar */
         .progress-container { background: #e9ecef; height: 8px; border-radius: 4px; margin: 15px 0; overflow: hidden; }
         .progress-bar { height: 100%; background: #28a745; width: 0%; transition: 1s; }
 
-        /* --- MÀN HÌNH CHI TIẾT (DETAIL VIEW) --- */
         #detailView { background: white; padding: 30px; border-radius: 16px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: left; }
         .detail-header { display: flex; gap: 20px; align-items: start; margin-bottom: 30px; flex-wrap: wrap; }
         .detail-img { width: 300px; height: 200px; object-fit: cover; border-radius: 10px; }
         .detail-info { flex: 1; }
         
-        /* Dashboard Tài chính trong Detail */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0; }
         .stat-box { background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #eee; text-align: center; }
-        .stat-val { display: block; font-size: 1.5em; font-weight: bold; color: #007bff; }
+        .stat-val { display: block; font-size: 1.2em; font-weight: bold; color: #007bff; }
 
-        /* Bảng lịch sử */
+        /* Bảng lịch sử & Request */
         .table-wrapper { overflow-x: auto; margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
         th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
         th { background: #f8f9fa; }
-        .tx-in { background: #f0fff4; } .tx-out { background: #fff5f5; }
-        .money-in { color: #28a745; font-weight: bold; } .money-out { color: #dc3545; font-weight: bold; }
+        .tx-in { background: #f0fff4; } 
+        .tx-out { background: #fff5f5; }
+        .tx-pending { background: #fff3cd; } /* Màu vàng cho Pending */
+        .money-in { color: #28a745; font-weight: bold; } 
+        .money-out { color: #dc3545; font-weight: bold; }
 
         /* Admin Panel */
         .admin-panel { background: #fff3cd; padding: 20px; border-radius: 10px; margin-top: 20px; border: 1px solid #ffeeba; }
@@ -61,7 +62,7 @@
 
     <div class="container">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 style="margin: 0;">🌍 Blockchain Crowdfunding</h2>
+            <h2 style="margin: 0;">🏛️ Multi-Sig DAO Fund</h2>
             <div>
                 <span id="walletAddress" style="font-weight:bold; margin-right: 10px;">...</span>
                 <button id="connectBtn" class="btn-primary">🔌 Kết nối Ví</button>
@@ -70,7 +71,7 @@
 
         <div id="homeView">
             <div id="adminCreateSection" class="admin-panel hidden" style="text-align: left;">
-                <h3>✨ Tạo Dự Án Mới</h3>
+                <h3>✨ Tạo Dự Án Mới (Dành cho Hội đồng)</h3>
                 <input type="text" id="newTitle" placeholder="Tên dự án">
                 <input type="text" id="newDesc" placeholder="Mô tả ngắn">
                 <input type="text" id="newImage" placeholder="Link ảnh (URL)">
@@ -83,7 +84,7 @@
         </div>
 
         <div id="detailView" class="hidden">
-            <button onclick="showHome()" class="btn-back">⬅ Quay lại danh sách</button>
+            <button onclick="showHome()" class="btn-back">⬅ Quay lại</button>
             <div style="clear: both;"></div>
 
             <div class="detail-header">
@@ -95,8 +96,12 @@
                     
                     <div class="stats-grid">
                         <div class="stat-box">
-                            <span style="color:#666">Tổng số tiền đã huy động</span>
+                            <span style="color:#666">Đã huy động</span>
                             <span id="d-raised" class="stat-val">0 ETH</span>
+                        </div>
+                        <div class="stat-box" style="background: #e3f2fd; border-color: #90caf9;">
+                            <span style="color:#0d47a1">Số dư khả dụng</span>
+                            <span id="d-balance" class="stat-val" style="color: #0d47a1">0 ETH</span>
                         </div>
                         <div class="stat-box">
                             <span style="color:#666">Mục tiêu</span>
@@ -119,26 +124,27 @@
             </div>
 
             <div id="adminAreaDetail" class="admin-panel hidden">
-                <h3>🔐 Admin Panel: Rút quỹ dự án này</h3>
+                <h3>🔐 Hội đồng Quản trị: Đề xuất Rút tiền</h3>
+                <p style="font-size: 0.9em; color: #666;">Cần <strong id="req-votes">...</strong> phiếu thuận để thực thi.</p>
                 
-                <input type="text" id="w-address" placeholder="1. Địa chỉ nhận tiền (0x...)" style="margin-bottom: 5px;">
-                <input type="text" id="w-reason" placeholder="2. Mục đích rút tiền (VD: Mua gạo, Xây cầu...)" style="margin-bottom: 5px;">
+                <input type="text" id="w-address" placeholder="1. Địa chỉ nhận tiền..." style="margin-bottom: 5px;">
+                <input type="number" id="w-amount" placeholder="2. Số tiền muốn rút (ETH)..." step="0.001" style="margin-bottom: 5px;">
+                <input type="text" id="w-reason" placeholder="3. Mục đích chi tiêu..." style="margin-bottom: 5px;">
                 
-                <button id="btnWithdrawDetail" class="btn-danger" style="width: 100%;">💸 Rút Toàn Bộ & Ghi Sổ</button>
-                
-                <button id="btnCloseProject" class="btn-secondary" style="margin-top: 10px; width: 100%;">🔄 Đóng/Mở Dự Án này</button>
+                <button id="btnCreateRequest" class="btn-warning" style="width: 100%;">📝 Tạo Yêu Cầu Duyệt Chi</button>
+                <button id="btnCloseProject" class="btn-secondary" style="margin-top: 10px; width: 100%;">🔄 Đóng/Mở Dự Án</button>
             </div>
 
-            <h3 style="margin-top: 30px;">📜 Lịch sử dòng tiền</h3>
+            <h3 style="margin-top: 30px;">📜 Lịch sử & Yêu cầu Chi tiêu</h3>
             <div class="table-wrapper">
                 <table id="historyTable">
                     <thead>
                         <tr>
-                            <th>Loại</th>
-                            <th>Ví</th>
+                            <th>Trạng thái</th>
+                            <th>Ví nhận/gửi</th>
                             <th>Số tiền</th>
-                            <th>Nội dung</th>
-                            <th>Thời gian</th>
+                            <th>Nội dung / Tiến độ duyệt</th>
+                            <th>Hành động</th>
                         </tr>
                     </thead>
                     <tbody id="historyBody"></tbody>
@@ -150,61 +156,67 @@
     <script type="module">
         import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
 
-        // 👇 THAY ĐỊA CHỈ CONTRACT V2 CỦA BẠN VÀO ĐÂY 👇
-        const CONTRACT_ADDRESS = "0xb74Db30B39dc0F5834214Caf7bad87Ce50EBEbc2"; 
+        // 👇 CẬP NHẬT CONTRACT ADDRESS MỚI SAU KHI DEPLOY VÀO ĐÂY 👇
+        const CONTRACT_ADDRESS = "0xb511c3F963459d0c711C07649A889fcd7BDA4955"; 
         
+        // ABI Mới (Cập nhật cho Multi-sig)
         const CONTRACT_ABI = [
             "function campaignCount() public view returns (uint256)",
-            // 👇 Cập nhật dòng này: Thêm 'uint256 currentBalance' vào vị trí số 7 (trước isOpen)
             "function campaigns(uint256) public view returns (uint256 id, address creator, string title, string description, string image, uint256 target, uint256 raised, uint256 currentBalance, bool isOpen)",
+            "function isOwner(address) public view returns (bool)",
+            "function requiredApprovals() public view returns (uint256)",
+            
             "function createCampaign(string title, string desc, string image, uint256 target) public",
             "function donateToCampaign(uint256 id, string message) public payable",
-            // 👇 Cập nhật hàm rút tiền (3 tham số)
-            "function withdrawFromCampaign(uint256 id, address payable to, string reason) public",
-            "function getAllDonations() public view returns (tuple(uint256 campaignId, address donor, uint256 amount, string message, uint256 timestamp)[])",
-            "function getCampaignWithdrawals(uint256 campaignId) public view returns (tuple(uint256 id, address to, uint256 amount, string reason, string proof, uint256 timestamp)[])",
+            
+            // Các hàm mới
+            "function createWithdrawRequest(uint256 id, address to, uint256 amount, string reason) public",
+            "function approveWithdrawRequest(uint256 campaignId, uint256 withdrawalId) public",
             "function addProofToWithdrawal(uint256 campaignId, uint256 withdrawalIndex, string proof) public",
-            "function owner() public view returns (address)",
             "function toggleCampaignStatus(uint256 id) public",
-            "event FundsWithdrawn(uint256 indexed campaignId, address indexed to, uint256 amount, string reason, uint256 timestamp)"
+
+            // View Helpers
+            "function getAllDonations() public view returns (tuple(uint256 campaignId, address donor, uint256 amount, string message, uint256 timestamp)[])",
+            "function getCampaignWithdrawals(uint256 campaignId) public view returns (tuple(uint256 id, address to, uint256 amount, string reason, string proof, uint256 timestamp, uint256 approvalCount, bool executed)[])",
+            "function hasApproved(uint256 campaignId, uint256 withdrawalId, address user) public view returns (bool)"
         ];
 
         let provider, signer, contract, currentAddr;
-        let currentCampaignId = null; // ID dự án đang xem chi tiết
+        let currentCampaignId = null;
+        let requiredVotes = 0;
 
-        // --- 1. KẾT NỐI VÍ ---
+        // --- KẾT NỐI VÍ ---
         document.getElementById("connectBtn").onclick = async () => {
             if (!window.ethereum) return alert("Cài MetaMask đi!");
-            await window.ethereum.request({ method: "eth_requestAccounts" });
-            provider = new ethers.BrowserProvider(window.ethereum);
-            signer = await provider.getSigner();
-            currentAddr = await signer.getAddress();
-            
-            document.getElementById("walletAddress").innerText = currentAddr.substring(0,6) + "...";
-            document.getElementById("connectBtn").classList.add("hidden");
-            
-            contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-            
-            checkAdminGlobal();
-            loadCampaignList();
+            try {
+                await window.ethereum.request({ method: "eth_requestAccounts" });
+                provider = new ethers.BrowserProvider(window.ethereum);
+                signer = await provider.getSigner();
+                currentAddr = await signer.getAddress();
+                
+                document.getElementById("walletAddress").innerText = currentAddr.substring(0,6) + "...";
+                document.getElementById("connectBtn").classList.add("hidden");
+                
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                
+                checkAdminGlobal();
+                loadCampaignList();
+            } catch(e) { console.error(e); }
         };
 
-        // --- 2. LOGIC ĐIỀU HƯỚNG (HOME <-> DETAIL) ---
         window.showHome = () => {
             document.getElementById("homeView").classList.remove("hidden");
             document.getElementById("detailView").classList.add("hidden");
-            loadCampaignList(); // Tải lại để cập nhật số tiền mới nhất
+            loadCampaignList(); 
         };
 
         window.openDetail = async (id) => {
-            currentCampaignId = id; // Lưu ID lại để dùng cho các nút Donate/Rút
+            currentCampaignId = id; 
             document.getElementById("homeView").classList.add("hidden");
             document.getElementById("detailView").classList.remove("hidden");
-            
             loadDetailData(id);
         };
 
-        // --- 3. TẢI DANH SÁCH (HOME) ---
         async function loadCampaignList() {
             const grid = document.getElementById("campaignGrid");
             grid.innerHTML = "";
@@ -212,40 +224,25 @@
 
             try {
                 const count = Number(await contract.campaignCount());
-                
-                if(count === 0) {
-                    grid.innerHTML = "<p>Chưa có dự án nào.</p>";
-                }
+                if(count === 0) grid.innerHTML = "<p>Chưa có dự án nào.</p>";
 
                 for (let i = 0; i < count; i++) {
                     const c = await contract.campaigns(i);
-                    // c: [id, creator, title, desc, img, target, raised, isOpen]
-                    
                     const raised = ethers.formatEther(c[6]);
                     const target = ethers.formatEther(c[5]);
                     const percent = (Number(raised) / Number(target)) * 100;
-                    const isOpen = c[8];
+                    const isOpen = c[8]; 
 
                     const card = document.createElement("div");
                     card.className = "card";
-                    // Khi bấm vào card -> Gọi hàm openDetail(id)
                     card.onclick = () => window.openDetail(i);
-                    
                     card.innerHTML = `
                         <img src="${c[4]}" class="card-img" onerror="this.src='https://via.placeholder.com/300'">
                         <div class="card-body">
-                            <h3 style="margin:0 0 10px;">
-                                ${c[2]} 
-                                <span class="badge ${isOpen ? 'open' : 'closed'}">${isOpen ? 'Đang mở' : 'Đóng'}</span>
-                            </h3>
+                            <h3 style="margin:0 0 10px;">${c[2]} <span class="badge ${isOpen ? 'open' : 'closed'}">${isOpen ? 'Mở' : 'Đóng'}</span></h3>
                             <p style="color:#666; font-size:0.9em; flex:1">${c[3].substring(0, 100)}...</p>
-                            
-                            <div style="margin-top:10px;">
-                                <strong>${raised}</strong> / ${target} ETH
-                            </div>
-                            <div class="progress-container">
-                                <div class="progress-bar" style="width: ${Math.min(percent, 100)}%"></div>
-                            </div>
+                            <div style="margin-top:10px;"><strong>${raised}</strong> / ${target} ETH</div>
+                            <div class="progress-container"><div class="progress-bar" style="width: ${Math.min(percent, 100)}%"></div></div>
                             <button class="btn-primary" style="width:100%; margin-top:10px;">Xem Chi Tiết</button>
                         </div>
                     `;
@@ -255,54 +252,54 @@
             document.getElementById("loadingText").classList.add("hidden");
         }
 
-        // --- 4. TẢI CHI TIẾT (DETAIL PAGE) ---
         async function loadDetailData(id) {
             try {
-                // A. Tải thông tin dự án
                 const c = await contract.campaigns(id);
                 document.getElementById("d-img").src = c[4];
                 document.getElementById("d-title").innerText = c[2];
                 document.getElementById("d-desc").innerText = c[3];
                 
-                const raised = ethers.formatEther(c[6]); // Tổng huy động
-                const balance = ethers.formatEther(c[7]); // 👇 Lấy số dư hiện tại (Index 7)
+                const raised = ethers.formatEther(c[6]);
+                const balance = ethers.formatEther(c[7]); 
                 const target = ethers.formatEther(c[5]);
+                const percent = (Number(raised) / Number(target)) * 100;
                 
-                // Cập nhật giao diện
-                document.getElementById("d-raised").innerText = raised + " Sepolia";
-                document.getElementById("d-target").innerText = target + " Sepolia";
-                //document.getElementById("d-progress").style.width = Math.min(percent, 100) + "%";
+                document.getElementById("d-raised").innerText = raised + " ETH";
+                document.getElementById("d-balance").innerText = balance + " ETH";
+                document.getElementById("d-target").innerText = target + " ETH";
+                document.getElementById("d-progress").style.width = Math.min(percent, 100) + "%";
                 
+                const isOpen = c[8]; 
                 const badge = document.getElementById("d-status");
-                if (c[8]) {
-                    badge.innerText = "Đang mở quyên góp"; badge.className = "badge open";
+                if (isOpen) {
+                    badge.innerText = "Đang mở"; badge.className = "badge open";
                     document.getElementById("donateArea").classList.remove("hidden");
                 } else {
-                    badge.innerText = "Dự án đã đóng"; badge.className = "badge closed";
+                    badge.innerText = "Đã đóng"; badge.className = "badge closed";
                     document.getElementById("donateArea").classList.add("hidden");
                 }
 
-                // B. Kiểm tra Admin để hiện nút Rút tiền
-                const owner = await contract.owner();
-                if (owner.toLowerCase() === currentAddr.toLowerCase()) {
+                // Check Admin
+                const isOwner = await contract.isOwner(currentAddr);
+                if (isOwner) {
                     document.getElementById("adminAreaDetail").classList.remove("hidden");
+                    requiredVotes = await contract.requiredApprovals();
+                    document.getElementById("req-votes").innerText = requiredVotes;
                 } else {
                     document.getElementById("adminAreaDetail").classList.add("hidden");
                 }
 
-                // C. Tải Lịch sử (In & Out)
-                renderHistoryTable(id);
+                renderHistoryTable(id, isOwner);
 
             } catch (e) { console.error("Lỗi detail:", e); }
         }
 
-        async function renderHistoryTable(campaignId) {
+        async function renderHistoryTable(campaignId, isAdmin) {
             const tbody = document.getElementById("historyBody");
-            tbody.innerHTML = "<tr><td colspan='5'>Đang tải lịch sử...</td></tr>";
+            tbody.innerHTML = "<tr><td colspan='5'>Đang tải dữ liệu...</td></tr>";
 
             try {
-                // 1. Lấy Donations (In)
-                // Lưu ý: Hàm getAllDonations trả về mảng tất cả, ta phải lọc theo campaignId
+                // 1. Donations
                 const allDonations = await contract.getAllDonations();
                 const myDonations = allDonations
                     .filter(d => Number(d.campaignId) === campaignId)
@@ -311,47 +308,74 @@
                         who: d.donor,
                         amount: d.amount,
                         msg: d.message,
-                        time: d.timestamp
+                        time: d.timestamp,
+                        status: 'Thành công'
                     }));
 
-                // 2. Lấy Withdrawals (Out) từ Events
-                // Filter event FundsWithdrawn(campaignId, to, amount)
-                // Ở đây dùng queryFilter cơ bản, nếu phức tạp cần filter theo topic
-                const filter = contract.filters.FundsWithdrawn(campaignId); 
-                const events = await contract.queryFilter(filter);
-                const myWithdraws = events.map(ev => ({
-                    type: 'OUT',
-                    who: ev.args[1], // address to
-                    amount: ev.args[2], // amount
-                    msg: "Rút quỹ dự án",
-                    time: (Date.now() / 1000) // Timestamp event hơi khó lấy chính xác ngay, dùng tạm time hiện tại hoặc phải getBlock
+                // 2. Withdraw Requests
+                const withdrawals = await contract.getCampaignWithdrawals(campaignId);
+                const myWithdraws = await Promise.all(withdrawals.map(async (w, idx) => {
+                    // Check xem mình đã vote chưa
+                    const voted = isAdmin ? await contract.hasApproved(campaignId, idx, currentAddr) : false;
+                    
+                    return {
+                        type: 'OUT',
+                        who: w.to,
+                        amount: w.amount,
+                        msg: w.reason,
+                        proof: w.proof,
+                        time: w.timestamp,
+                        index: idx,
+                        executed: w.executed,
+                        approvals: w.approvalCount,
+                        voted: voted
+                    };
                 }));
 
-                // 3. Gộp và sắp xếp
-                const combined = [...myDonations, ...myWithdraws].reverse(); // Mới nhất lên đầu (giả lập)
+                const combined = [...myDonations, ...myWithdraws].sort((a,b) => Number(b.time) - Number(a.time));
 
                 tbody.innerHTML = "";
                 if (combined.length === 0) tbody.innerHTML = "<tr><td colspan='5'>Chưa có giao dịch nào.</td></tr>";
 
                 combined.forEach(t => {
                     const isIn = t.type === 'IN';
+                    let statusBadge = "";
+                    let actionHtml = "";
+
+                    if (isIn) {
+                        statusBadge = `<span style="color:green">✅ Đã nhận</span>`;
+                    } else {
+                        // Logic hiển thị cho Rút tiền
+                        if (t.executed) {
+                            statusBadge = `<span style="color:blue">🚀 Đã chuyển</span>`;
+                            if (t.proof) actionHtml = `<a href="${t.proof}" target="_blank">Xem hóa đơn</a>`;
+                            else if (isAdmin) actionHtml = `<button onclick="window.uploadProof(${t.index})" style="font-size:0.8em">Up hóa đơn</button>`;
+                        } else {
+                            statusBadge = `<span style="color:#e67e22">⏳ Chờ duyệt (${t.approvals}/${requiredVotes})</span>`;
+                            if (isAdmin) {
+                                if (t.voted) actionHtml = `<span style="color:green; font-size:0.8em">Đã duyệt</span>`;
+                                else actionHtml = `<button onclick="window.approveRequest(${t.index})" class="btn-success" style="padding:4px 8px; font-size:0.8em">✅ Duyệt chi</button>`;
+                            }
+                        }
+                    }
+
                     tbody.innerHTML += `
-                        <tr class="${isIn ? 'tx-in' : 'tx-out'}">
-                            <td>${isIn ? '📥 Nhận' : '📤 Rút'}</td>
+                        <tr class="${isIn ? 'tx-in' : (t.executed ? 'tx-out' : 'tx-pending')}">
+                            <td>${statusBadge}</td>
                             <td>${t.who.substring(0,6)}...</td>
                             <td class="${isIn ? 'money-in' : 'money-out'}">${isIn ? '+' : '-'} ${ethers.formatEther(t.amount)}</td>
-                            <td>${t.msg}</td>
-                            <td>${isIn ? new Date(Number(t.time)*1000).toLocaleString() : 'Recent'}</td>
+                            <td style="text-align: left;">
+                                <strong>${t.msg}</strong>
+                            </td>
+                            <td>${actionHtml}</td>
                         </tr>
                     `;
                 });
-
             } catch(e) { console.error(e); }
         }
 
-        // --- CÁC HÀM TƯƠNG TÁC ---
+        // --- GLOBAL ACTIONS ---
         
-        // 1. Tạo dự án (Gọi từ Home)
         window.createCampaign = async () => {
             const t = document.getElementById("newTitle").value;
             const d = document.getElementById("newDesc").value;
@@ -367,7 +391,6 @@
             } catch(e) { alert("Lỗi: " + e.message); }
         };
 
-        // 2. Quyên góp (Gọi từ Detail)
         document.getElementById("btnDonateDetail").onclick = async () => {
             const amt = document.getElementById("d-amount").value;
             const msg = document.getElementById("d-message").value;
@@ -375,37 +398,50 @@
 
             try {
                 const tx = await contract.donateToCampaign(currentCampaignId, msg, { value: ethers.parseEther(amt) });
-                alert("Đang xử lý...");
                 await tx.wait();
-                alert("Cảm ơn bạn đã quyên góp!");
-                loadDetailData(currentCampaignId); // Tải lại chi tiết
+                alert("Quyên góp thành công!");
+                loadDetailData(currentCampaignId);
             } catch(e) { alert("Lỗi: " + e.message); }
         };
 
-        // 3. Rút tiền (Gọi từ Detail - Admin)
-        document.getElementById("btnWithdrawDetail").onclick = async () => {
+        // Tạo Yêu cầu Rút tiền (Bước 1)
+        document.getElementById("btnCreateRequest").onclick = async () => {
             const to = document.getElementById("w-address").value;
-            // 👇 THÊM DÒNG NÀY: Lấy lý do từ ô input
+            const amt = document.getElementById("w-amount").value;
             const reason = document.getElementById("w-reason").value;
 
-            // 👇 CẬP NHẬT ĐIỀU KIỆN KIỂM TRA
-            if(!to || !reason) return alert("Vui lòng nhập đầy đủ: Địa chỉ nhận và Lý do rút tiền!");
+            if(!to || !amt || !reason) return alert("Nhập đủ thông tin!");
 
             try {
-                // 👇 CẬP NHẬT GỌI HÀM: Truyền đủ 3 tham số (id, to, reason)
-                const tx = await contract.withdrawFromCampaign(currentCampaignId, to, reason);
-                
-                alert("⏳ Đang xử lý rút tiền...");
+                const tx = await contract.createWithdrawRequest(currentCampaignId, to, ethers.parseEther(amt), reason);
+                alert("⏳ Đang tạo yêu cầu rút tiền...");
                 await tx.wait();
-                alert("✅ Rút tiền thành công!");
+                alert("✅ Đã tạo yêu cầu! Chờ các thành viên khác duyệt.");
                 loadDetailData(currentCampaignId);
-            } catch(e) { 
-                console.error(e);
-                alert("Lỗi: " + (e.reason || e.message)); 
-            }
+            } catch(e) { alert("Lỗi: " + e.message); }
         };
 
-        // 4. Đóng/Mở dự án
+        // Duyệt Yêu cầu (Bước 2)
+        window.approveRequest = async (withdrawalId) => {
+            try {
+                const tx = await contract.approveWithdrawRequest(currentCampaignId, withdrawalId);
+                alert("⏳ Đang gửi phiếu thuận...");
+                await tx.wait();
+                alert("✅ Đã duyệt thành công!");
+                loadDetailData(currentCampaignId);
+            } catch(e) { alert("Lỗi: " + e.message); }
+        };
+
+        window.uploadProof = async (withdrawalIndex) => {
+            const proofLink = prompt("Link minh chứng:");
+            if (!proofLink) return;
+            try {
+                const tx = await contract.addProofToWithdrawal(currentCampaignId, withdrawalIndex, proofLink);
+                await tx.wait();
+                loadDetailData(currentCampaignId);
+            } catch(e) { alert("Lỗi: " + e.message); }
+        };
+
         document.getElementById("btnCloseProject").onclick = async () => {
              try {
                 const tx = await contract.toggleCampaignStatus(currentCampaignId);
@@ -414,16 +450,14 @@
             } catch(e) { alert("Lỗi: " + e.message); }
         };
 
-        // Utility: Check Admin Global
         async function checkAdminGlobal() {
             try {
-                const owner = await contract.owner();
-                if (owner.toLowerCase() === currentAddr.toLowerCase()) {
+                const isOwner = await contract.isOwner(currentAddr);
+                if (isOwner) {
                     document.getElementById("adminCreateSection").classList.remove("hidden");
                 }
             } catch(e) {}
         }
-
     </script>
 </body>
 </html>
