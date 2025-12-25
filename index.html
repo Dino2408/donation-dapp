@@ -120,10 +120,12 @@
 
             <div id="adminAreaDetail" class="admin-panel hidden">
                 <h3>🔐 Admin Panel: Rút quỹ dự án này</h3>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="w-address" placeholder="Địa chỉ nhận tiền..." style="flex: 2;">
-                    <button id="btnWithdrawDetail" class="btn-danger">💸 Rút Toàn Bộ</button>
-                </div>
+                
+                <input type="text" id="w-address" placeholder="1. Địa chỉ nhận tiền (0x...)" style="margin-bottom: 5px;">
+                <input type="text" id="w-reason" placeholder="2. Mục đích rút tiền (VD: Mua gạo, Xây cầu...)" style="margin-bottom: 5px;">
+                
+                <button id="btnWithdrawDetail" class="btn-danger" style="width: 100%;">💸 Rút Toàn Bộ & Ghi Sổ</button>
+                
                 <button id="btnCloseProject" class="btn-secondary" style="margin-top: 10px; width: 100%;">🔄 Đóng/Mở Dự Án này</button>
             </div>
 
@@ -149,7 +151,7 @@
         import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
 
         // 👇 THAY ĐỊA CHỈ CONTRACT V2 CỦA BẠN VÀO ĐÂY 👇
-        const CONTRACT_ADDRESS = "0x318298BC6ce0A587375992D221212E513EB16908"; 
+        const CONTRACT_ADDRESS = "0x2A9e9234f00ceA40EBBE31842cfd63991ba4DA5D"; 
         
         const CONTRACT_ABI = [
     {
@@ -214,6 +216,18 @@
           "indexed": false,
           "internalType": "uint256",
           "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "reason",
+          "type": "string"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
           "type": "uint256"
         }
       ],
@@ -480,6 +494,11 @@
           "internalType": "address payable",
           "name": "_to",
           "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "_reason",
+          "type": "string"
         }
       ],
       "name": "withdrawFromCampaign",

@@ -36,7 +36,7 @@ contract DonationDApp {
     event CampaignCreated(uint256 id, string title, uint256 target);
     event NewDonation(uint256 indexed campaignId, address indexed donor, uint256 amount, string message);
     event CampaignClosed(uint256 id);
-    event FundsWithdrawn(uint256 indexed campaignId, address indexed to, uint256 amount);
+    event FundsWithdrawn(uint256 indexed campaignId, address indexed to, uint256 amount, string reason, uint256 timestamp);
 
     constructor() {
         owner = msg.sender;
@@ -81,21 +81,20 @@ contract DonationDApp {
 
     // 3. RÚT TIỀN TỪ DỰ ÁN (Chỉ Admin)
     // Admin có thể rút tiền của dự án bất cứ lúc nào, nhưng phải chỉ định rút từ dự án nào
-    function withdrawFromCampaign(uint256 _id, address payable _to) public onlyOwner {
+    function withdrawFromCampaign(uint256 _id, address payable _to, string memory _reason) public onlyOwner {
         require(_id < campaignCount, "Du an khong ton tai");
-        
-        // Rút toàn bộ tiền hiện có trong contract (đơn giản hóa)
-        // Lưu ý thực tế: Nên tracking balance riêng của từng campaign nếu muốn phức tạp hơn
-        // Ở đây ta dùng logic: Tiền trong ví contract là tiền chung, nhưng ta rút dựa trên số raised.
-        // Để an toàn và đơn giản cho demo: Ta rút số dư thực tế của Contract.
+        require(bytes(_reason).length > 0, "Phai ghi ro ly do rut tien"); // Bắt buộc có nội dung
         
         uint256 balance = address(this).balance;
+        
+        //Rút số dư hiện tại 
         require(balance > 0, "Khong co tien trong quy");
 
         (bool success, ) = _to.call{value: balance}("");
         require(success, "Rut tien that bai");
 
-        emit FundsWithdrawn(_id, _to, balance);
+        // Emit sự kiện kèm Lý do
+        emit FundsWithdrawn(_id, _to, balance, _reason, block.timestamp);
     }
 
     // 4. ĐÓNG DỰ ÁN (Không nhận tiền nữa)
