@@ -95,7 +95,7 @@
                     
                     <div class="stats-grid">
                         <div class="stat-box">
-                            <span style="color:#666">Đã gọi vốn</span>
+                            <span style="color:#666">Tổng số tiền đã huy động</span>
                             <span id="d-raised" class="stat-val">0 ETH</span>
                         </div>
                         <div class="stat-box">
@@ -151,362 +151,23 @@
         import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.min.js";
 
         // 👇 THAY ĐỊA CHỈ CONTRACT V2 CỦA BẠN VÀO ĐÂY 👇
-        const CONTRACT_ADDRESS = "0x2A9e9234f00ceA40EBBE31842cfd63991ba4DA5D"; 
+        const CONTRACT_ADDRESS = "0x8aB8FE7aDB8bb44313B8876073E31C47C63262CC"; 
         
         const CONTRACT_ABI = [
-    {
-      "inputs": [],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        }
-      ],
-      "name": "CampaignClosed",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "title",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "target",
-          "type": "uint256"
-        }
-      ],
-      "name": "CampaignCreated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "campaignId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "to",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "reason",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "name": "FundsWithdrawn",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "campaignId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "donor",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "message",
-          "type": "string"
-        }
-      ],
-      "name": "NewDonation",
-      "type": "event"
-    },
-    {
-      "inputs": [],
-      "name": "campaignCount",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "campaigns",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "id",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "creator",
-          "type": "address"
-        },
-        {
-          "internalType": "string",
-          "name": "title",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "description",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "image",
-          "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "target",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "raised",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "isOpen",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "_title",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "_desc",
-          "type": "string"
-        },
-        {
-          "internalType": "string",
-          "name": "_image",
-          "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_target",
-          "type": "uint256"
-        }
-      ],
-      "name": "createCampaign",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_id",
-          "type": "uint256"
-        },
-        {
-          "internalType": "string",
-          "name": "_message",
-          "type": "string"
-        }
-      ],
-      "name": "donateToCampaign",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "donations",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "campaignId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address",
-          "name": "donor",
-          "type": "address"
-        },
-        {
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "string",
-          "name": "message",
-          "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "timestamp",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getAllDonations",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "campaignId",
-              "type": "uint256"
-            },
-            {
-              "internalType": "address",
-              "name": "donor",
-              "type": "address"
-            },
-            {
-              "internalType": "uint256",
-              "name": "amount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "string",
-              "name": "message",
-              "type": "string"
-            },
-            {
-              "internalType": "uint256",
-              "name": "timestamp",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct DonationDApp.Donation[]",
-          "name": "",
-          "type": "tuple[]"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_id",
-          "type": "uint256"
-        }
-      ],
-      "name": "toggleCampaignStatus",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_id",
-          "type": "uint256"
-        },
-        {
-          "internalType": "address payable",
-          "name": "_to",
-          "type": "address"
-        },
-        {
-          "internalType": "string",
-          "name": "_reason",
-          "type": "string"
-        }
-      ],
-      "name": "withdrawFromCampaign",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    }
-  ];
+            "function campaignCount() public view returns (uint256)",
+            // 👇 Cập nhật dòng này: Thêm 'uint256 currentBalance' vào vị trí số 7 (trước isOpen)
+            "function campaigns(uint256) public view returns (uint256 id, address creator, string title, string description, string image, uint256 target, uint256 raised, uint256 currentBalance, bool isOpen)",
+            "function createCampaign(string title, string desc, string image, uint256 target) public",
+            "function donateToCampaign(uint256 id, string message) public payable",
+            // 👇 Cập nhật hàm rút tiền (3 tham số)
+            "function withdrawFromCampaign(uint256 id, address payable to, string reason) public",
+            "function getAllDonations() public view returns (tuple(uint256 campaignId, address donor, uint256 amount, string message, uint256 timestamp)[])",
+            "function getCampaignWithdrawals(uint256 campaignId) public view returns (tuple(uint256 id, address to, uint256 amount, string reason, string proof, uint256 timestamp)[])",
+            "function addProofToWithdrawal(uint256 campaignId, uint256 withdrawalIndex, string proof) public",
+            "function owner() public view returns (address)",
+            "function toggleCampaignStatus(uint256 id) public",
+            "event FundsWithdrawn(uint256 indexed campaignId, address indexed to, uint256 amount, string reason, uint256 timestamp)"
+        ];
 
         let provider, signer, contract, currentAddr;
         let currentCampaignId = null; // ID dự án đang xem chi tiết
@@ -563,7 +224,7 @@
                     const raised = ethers.formatEther(c[6]);
                     const target = ethers.formatEther(c[5]);
                     const percent = (Number(raised) / Number(target)) * 100;
-                    const isOpen = c[7];
+                    const isOpen = c[8];
 
                     const card = document.createElement("div");
                     card.className = "card";
@@ -603,16 +264,17 @@
                 document.getElementById("d-title").innerText = c[2];
                 document.getElementById("d-desc").innerText = c[3];
                 
-                const raised = ethers.formatEther(c[6]);
+                const raised = ethers.formatEther(c[6]); // Tổng huy động
+                const balance = ethers.formatEther(c[7]); // 👇 Lấy số dư hiện tại (Index 7)
                 const target = ethers.formatEther(c[5]);
-                const percent = (Number(raised) / Number(target)) * 100;
                 
-                document.getElementById("d-raised").innerText = raised + " ETH";
-                document.getElementById("d-target").innerText = target + " ETH";
-                document.getElementById("d-progress").style.width = Math.min(percent, 100) + "%";
+                // Cập nhật giao diện
+                document.getElementById("d-raised").innerText = raised + " Sepolia";
+                document.getElementById("d-target").innerText = target + " Sepolia";
+                //document.getElementById("d-progress").style.width = Math.min(percent, 100) + "%";
                 
                 const badge = document.getElementById("d-status");
-                if (c[7]) {
+                if (c[8]) {
                     badge.innerText = "Đang mở quyên góp"; badge.className = "badge open";
                     document.getElementById("donateArea").classList.remove("hidden");
                 } else {
@@ -723,15 +385,24 @@
         // 3. Rút tiền (Gọi từ Detail - Admin)
         document.getElementById("btnWithdrawDetail").onclick = async () => {
             const to = document.getElementById("w-address").value;
-            if(!to) return alert("Nhập địa chỉ nhận!");
+            // 👇 THÊM DÒNG NÀY: Lấy lý do từ ô input
+            const reason = document.getElementById("w-reason").value;
+
+            // 👇 CẬP NHẬT ĐIỀU KIỆN KIỂM TRA
+            if(!to || !reason) return alert("Vui lòng nhập đầy đủ: Địa chỉ nhận và Lý do rút tiền!");
 
             try {
-                const tx = await contract.withdrawFromCampaign(currentCampaignId, to);
-                alert("Đang rút tiền...");
+                // 👇 CẬP NHẬT GỌI HÀM: Truyền đủ 3 tham số (id, to, reason)
+                const tx = await contract.withdrawFromCampaign(currentCampaignId, to, reason);
+                
+                alert("⏳ Đang xử lý rút tiền...");
                 await tx.wait();
-                alert("Rút thành công!");
+                alert("✅ Rút tiền thành công!");
                 loadDetailData(currentCampaignId);
-            } catch(e) { alert("Lỗi: " + e.message); }
+            } catch(e) { 
+                console.error(e);
+                alert("Lỗi: " + (e.reason || e.message)); 
+            }
         };
 
         // 4. Đóng/Mở dự án
